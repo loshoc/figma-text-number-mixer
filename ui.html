@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    body {
+      font-family: sans-serif;
+      font-size: 13px;
+      padding: 16px;
+      margin: 0;
+      box-sizing: border-box;
+      width: 100%;
+      height: 420px;
+      overflow-y: auto;
+    }
+    h1 {
+      font-size: 12px;
+      font-weight: 600;
+      margin-bottom: 10px;
+    }
+    select, button, input { margin-bottom: 10px; padding: 5px; }
+    input{
+      padding: 9px;
+      border-radius: 5px;
+      border: none;
+      background-color: #f5f5f5;
+    }
+    .divider {
+      border: none;
+      height: 1px;
+      background-color: #e5e5e5;
+      margin: 16px 0;
+    }
+    
+    .font-dropdown {
+      position: relative;
+      width: 100%;
+      margin-bottom: 10px;
+    }
+    .font-select {
+      padding: 8px;
+      cursor: pointer;
+      border: 1px solid #e5e5e5;
+      border-radius: 5px;
+      position: relative;
+      padding-right: 30px;
+    }
+    .font-select::after {
+      content: '';
+      position: absolute;
+      right: 10px;
+      top: 50%;
+      width: 4px;
+      height: 4px;
+      border-right: 1.5px solid #333;
+      border-bottom: 1.5px solid #333;
+      transform: translateY(-70%) rotate(45deg);
+      transition: transform 0.3s ease;
+    }
+    .font-dropdown.active .font-select::after {
+      transform: translateY(-30%) rotate(-135deg);
+    }
+    .font-dropdown-content {
+      display: none;
+      position: fixed;
+      width: calc(100% - 32px);
+      background-color: #fff;
+      border-radius: 5px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      z-index: 9999;
+      max-height: 300px;
+      overflow-y: auto;
+    }
+    .font-search {
+      position: sticky;
+      top: 0;
+      width: calc(100% - 10px);
+      margin: 5px;
+      padding: 8px;
+      background-color: #f5f5f5;
+      outline: none;
+    }
+    .font-search:focus {
+      border: 0.6px solid #000000;
+    }
+    input:focus {
+      outline: none;
+      box-shadow: inset 0 0 0 0.6px #000000;
+    }
+    .font-options-list {
+
+      padding-top: 10px;
+      max-height: 150px;
+      overflow-y: auto;
+    }
+    .font-option {
+      padding: 10px;
+      cursor: pointer;
+    }
+    .font-option:hover {
+      background-color: #f0f0f0;
+    }
+    .font-dropdown.active .font-dropdown-content {
+      display: block;
+    }
+    .horizontal-group {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 10px;
+    }
+    .horizontal-group .font-dropdown {
+      width: 65%;
+      margin-bottom: 0;
+    }
+    .horizontal-group input[type="number"] {
+      width: 30%;
+    }
+    #applyButton {
+      width: 100%;
+      padding: 10px;
+      border: none;
+      border-radius: 5px;
+      background-color: #000000;
+      color: #fff;
+      cursor: pointer;
+    }
+
+    /* Custom checkbox styles */
+    .custom-checkbox {
+      display: flex;
+      align-items: center;
+      cursor: pointer;
+      user-select: none;
+      margin-top: 20px;
+      margin-bottom: 30px;
+    }
+
+    .custom-checkbox input {
+      position: absolute;
+      opacity: 0;
+      cursor: pointer;
+      height: 0;
+      width: 0;
+    }
+
+    .checkmark {
+      height: 14px;
+      width: 14px;
+      background-color: #fff;
+      border: 1px solid #ccc;
+      border-radius: 3px;
+      margin-right: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .custom-checkbox:hover input ~ .checkmark {
+      background-color: #f0f0f0;
+    }
+
+    .custom-checkbox input:checked ~ .checkmark {
+      background-color: #000;
+      border-color: #000;
+    }
+
+    .checkmark:after {
+      content: "";
+      display: none;
+      width: 4px;
+      height: 8px;
+      border: solid white;
+      border-width: 0 2px 2px 0;
+      transform: rotate(45deg);
+    }
+
+    .custom-checkbox input:checked ~ .checkmark:after {
+      display: block;
+    }
+  </style>
+</head>
+<body>
+  <h1>Text Settings</h1>
+  <div class="font-dropdown">
+    <div class="font-select" id="textFontSelect">Inter</div>
+    <div class="font-dropdown-content" id="textFontOptions">
+      <input type="text" class="font-search" placeholder="Search fonts...">
+      <div class="font-options-list"></div>
+    </div>
+  </div>
+  <div class="horizontal-group">
+    <div class="font-dropdown">
+      <div class="font-select" id="textWeightSelect">Regular</div>
+      <div class="font-dropdown-content" id="textWeightOptions">
+        <div class="font-options-list"></div>
+      </div>
+    </div>
+    <input type="number" id="textSize" placeholder="Font size" value="16">
+  </div>
+  <hr class="divider">
+  <h1>Number Settings</h1>
+  <div class="font-dropdown">
+    <div class="font-select" id="numberFontSelect">Inter</div>
+    <div class="font-dropdown-content" id="numberFontOptions">
+      <input type="text" class="font-search" placeholder="Search fonts...">
+      <div class="font-options-list"></div>
+    </div>
+  </div>
+  <div class="horizontal-group">
+    <div class="font-dropdown">
+      <div class="font-select" id="numberWeightSelect">Regular</div>
+      <div class="font-dropdown-content" id="numberWeightOptions">
+        <div class="font-options-list"></div>
+      </div>
+    </div>
+    <input type="number" id="numberSize" placeholder="Font size" value="16">
+  </div>
+
+  <label class="custom-checkbox">
+    <input type="checkbox" id="keepCurrentSize">
+    <span class="checkmark"></span>
+    All keep current font sizes
+  </label>
+  <p style="color: #ccc;">Select the text layer and apply styles</p>
+  <button id="applyButton">Apply Styles</button>
+
+  <script>
+    let activeDropdown = null;
+
+    function setupDropdown(selectId, optionsId, options, hasSearch = false, onSelect = null) {
+      const selectElement = document.getElementById(selectId);
+      const dropdown = selectElement.closest('.font-dropdown');
+      const optionsContainer = document.getElementById(optionsId);
+      
+      function renderOptions() {
+        const optionsHtml = options.map(opt => 
+          `<div class="font-option" data-value="${opt}">${opt}</div>`
+        ).join('');
+        optionsContainer.querySelector('.font-options-list').innerHTML = optionsHtml;
+      }
+
+      function scrollToOption(optionText) {
+        const optionsList = optionsContainer.querySelector('.font-options-list');
+        const option = Array.from(optionsList.children).find(el => el.textContent === optionText);
+        if (option) {
+          optionsList.scrollTop = option.offsetTop - optionsList.offsetTop;
+        }
+      }
+
+      function setupSearchBox() {
+        const searchBox = optionsContainer.querySelector('.font-search');
+        const optionsList = optionsContainer.querySelector('.font-options-list');
+        searchBox.addEventListener('input', (e) => {
+          const searchTerm = e.target.value.toLowerCase();
+          const fontOptions = optionsContainer.querySelectorAll('.font-option');
+          let firstMatch = null;
+          fontOptions.forEach(option => {
+            if (!firstMatch && option.textContent.toLowerCase().startsWith(searchTerm)) {
+              firstMatch = option;
+            }
+          });
+          if (firstMatch) {
+            const topOffset = firstMatch.offsetTop - optionsList.offsetTop;
+            optionsList.scrollTop = topOffset;
+          }
+        });
+
+        searchBox.addEventListener('click', (e) => {
+          e.stopPropagation();
+        });
+      }
+
+      if (hasSearch) {
+        setupSearchBox();
+      }
+
+      function positionDropdown() {
+        const rect = selectElement.getBoundingClientRect();
+        optionsContainer.style.top = `${rect.bottom}px`;
+        optionsContainer.style.left = `${rect.left}px`;
+        optionsContainer.style.width = `${rect.width}px`;
+      }
+
+      selectElement.addEventListener('click', (event) => {
+        event.stopPropagation();
+        if (activeDropdown && activeDropdown !== dropdown) {
+          activeDropdown.classList.remove('active');
+        }
+        dropdown.classList.toggle('active');
+        if (dropdown.classList.contains('active')) {
+          activeDropdown = dropdown;
+          renderOptions();
+          positionDropdown();
+          scrollToOption(selectElement.textContent);
+          if (hasSearch) {
+            const searchBox = optionsContainer.querySelector('.font-search');
+            searchBox.value = '';
+          }
+        } else {
+          activeDropdown = null;
+        }
+        dropdown.offsetHeight;
+      });
+
+      optionsContainer.addEventListener('click', (e) => {
+        if (e.target.classList.contains('font-option')) {
+          const selectedValue = e.target.dataset.value;
+          selectElement.textContent = selectedValue;
+          dropdown.classList.remove('active');
+          if (hasSearch) {
+            optionsContainer.querySelector('.font-search').value = '';
+          }
+          if (onSelect) onSelect(selectedValue);
+        }
+      });
+
+      return {
+        setValue: (value) => {
+          selectElement.textContent = value;
+        },
+        getValue: () => selectElement.textContent,
+        setOptions: (newOptions) => {
+          options = newOptions;
+          renderOptions();
+        }
+      };
+    }
+
+    function closeAllDropdowns() {
+      if (activeDropdown) {
+        activeDropdown.classList.remove('active');
+        const searchBox = activeDropdown.querySelector('.font-search');
+        if (searchBox) {
+          searchBox.value = '';
+        }
+        activeDropdown = null;
+      }
+    }
+
+    function repositionDropdowns() {
+      if (activeDropdown) {
+        const selectElement = activeDropdown.querySelector('.font-select');
+        const optionsContainer = activeDropdown.querySelector('.font-dropdown-content');
+        const rect = selectElement.getBoundingClientRect();
+        optionsContainer.style.top = `${rect.bottom}px`;
+        optionsContainer.style.left = `${rect.left}px`;
+      }
+    }
+
+    let textFontDropdown, numberFontDropdown, textWeightDropdown, numberWeightDropdown;
+
+    function updateWeightDropdown(fontSelectId, weightSelectId, fontFamily) {
+      parent.postMessage({ pluginMessage: { type: 'get-font-weights', fontFamily, fontSelectId } }, '*');
+    }
+
+    window.onmessage = (event) => {
+      const msg = event.data.pluginMessage;
+      if (msg.type === 'fonts-list') {
+        fonts = msg.fontFamilies;
+        
+        // Sort fonts alphabetically
+        fonts.sort((a, b) => a.localeCompare(b));
+        
+        textFontDropdown = setupDropdown('textFontSelect', 'textFontOptions', fonts, true, 
+          (selectedFont) => updateWeightDropdown('textFont', 'textWeight', selectedFont));
+        numberFontDropdown = setupDropdown('numberFontSelect', 'numberFontOptions', fonts, true,
+          (selectedFont) => updateWeightDropdown('numberFont', 'numberWeight', selectedFont));
+        
+        // Set default font to Inter for text and Times New Roman for numbers
+        textFontDropdown.setValue('Inter');
+        numberFontDropdown.setValue('Times New Roman');
+        updateWeightDropdown('textFont', 'textWeight', 'Inter');
+        updateWeightDropdown('numberFont', 'numberWeight', 'Times New Roman');
+      } else if (msg.type === 'font-weights') {
+        const weightOptions = msg.weights;
+        if (msg.fontSelectId === 'textFont') {
+          if (!textWeightDropdown) {
+            textWeightDropdown = setupDropdown('textWeightSelect', 'textWeightOptions', weightOptions, false);
+          } else {
+            textWeightDropdown.setOptions(weightOptions);
+          }
+          textWeightDropdown.setValue(weightOptions[0] || 'Regular');
+        } else {
+          if (!numberWeightDropdown) {
+            numberWeightDropdown = setupDropdown('numberWeightSelect', 'numberWeightOptions', weightOptions, false);
+          } else {
+            numberWeightDropdown.setOptions(weightOptions);
+          }
+          numberWeightDropdown.setValue(weightOptions[0] || 'Regular');
+        }
+      }
+    };
+
+    function setupSizeCheckbox() {
+      const checkbox = document.getElementById('keepCurrentSize');
+      const textSizeInput = document.getElementById('textSize');
+      const numberSizeInput = document.getElementById('numberSize');
+
+      function updateInputs(checked) {
+        textSizeInput.disabled = checked;
+        numberSizeInput.disabled = checked;
+        
+        if (checked) {
+          textSizeInput.value = '';
+          numberSizeInput.value = '';
+          textSizeInput.placeholder = '';
+          numberSizeInput.placeholder = '';
+        } else {
+          textSizeInput.value = '16';
+          numberSizeInput.value = '16';
+          textSizeInput.placeholder = 'Font size';
+          numberSizeInput.placeholder = 'Font size';
+        }
+      }
+
+      checkbox.addEventListener('change', function() {
+        updateInputs(this.checked);
+      });
+
+      // Initial setup
+      updateInputs(checkbox.checked);
+    }
+
+    setupSizeCheckbox();
+
+    document.getElementById('applyButton').onclick = () => {
+      const textFont = textFontDropdown.getValue();
+      const textWeight = textWeightDropdown.getValue();
+      const numberFont = numberFontDropdown.getValue();
+      const numberWeight = numberWeightDropdown.getValue();
+      
+      const keepCurrentSize = document.getElementById('keepCurrentSize').checked;
+      const textSize = keepCurrentSize ? 'current' : document.getElementById('textSize').value;
+      const numberSize = keepCurrentSize ? 'current' : document.getElementById('numberSize').value;
+
+      parent.postMessage({ 
+        pluginMessage: { 
+          type: 'apply-styles',
+          textFont, textWeight, textSize,
+          numberFont, numberWeight, numberSize,
+          keepCurrentSize
+        } 
+      }, '*');
+    };
+
+    parent.postMessage({ pluginMessage: { type: 'get-fonts' } }, '*');
+
+    document.addEventListener('click', closeAllDropdowns);
+    window.addEventListener('blur', closeAllDropdowns);
+    document.addEventListener('scroll', repositionDropdowns);
+  </script>
+</body>
+</html>
