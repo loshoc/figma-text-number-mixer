@@ -46,8 +46,17 @@ figma.ui.onmessage = (msg) => __awaiter(void 0, void 0, void 0, function* () {
                         yield figma.loadFontAsync({ family: numberFont, style: numberWeight });
                         // Apply text styles to the entire layer
                         node.fontName = { family: textFont, style: textWeight };
-                        if (!msg.keepCurrentSize && msg.textSize !== 'current') {
-                            node.fontSize = msg.textSize;
+                        const currentFontSize = node.fontSize;
+                        // Function to safely parse number or return fallback
+                        const safeParseNumber = (value, fallback) => {
+                            if (value === 'current')
+                                return fallback;
+                            const parsed = parseFloat(value);
+                            return isNaN(parsed) ? fallback : parsed;
+                        };
+                        if (!msg.keepCurrentSize) {
+                            const textSize = safeParseNumber(msg.textSize, currentFontSize);
+                            node.fontSize = textSize;
                         }
                         // Find and style number segments
                         const text = node.characters;
@@ -57,8 +66,9 @@ figma.ui.onmessage = (msg) => __awaiter(void 0, void 0, void 0, function* () {
                             const start = match.index;
                             const end = start + match[0].length;
                             node.setRangeFontName(start, end, { family: numberFont, style: numberWeight });
-                            if (!msg.keepCurrentSize && msg.numberSize !== 'current') {
-                                node.setRangeFontSize(start, end, msg.numberSize);
+                            if (!msg.keepCurrentSize) {
+                                const numberSize = safeParseNumber(msg.numberSize, currentFontSize);
+                                node.setRangeFontSize(start, end, numberSize);
                             }
                         }
                         console.log('Styles applied to node:', node.name);

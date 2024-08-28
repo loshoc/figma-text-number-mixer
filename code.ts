@@ -41,8 +41,18 @@ figma.ui.onmessage = async (msg) => {
             // Apply text styles to the entire layer
             node.fontName = { family: textFont, style: textWeight };
             
-            if (!msg.keepCurrentSize && msg.textSize !== 'current') {
-              node.fontSize = msg.textSize;
+            const currentFontSize = node.fontSize as number;
+
+            // Function to safely parse number or return fallback
+            const safeParseNumber = (value: any, fallback: number): number => {
+              if (value === 'current') return fallback;
+              const parsed = parseFloat(value);
+              return isNaN(parsed) ? fallback : parsed;
+            };
+
+            if (!msg.keepCurrentSize) {
+              const textSize = safeParseNumber(msg.textSize, currentFontSize);
+              node.fontSize = textSize;
             }
 
             // Find and style number segments
@@ -54,8 +64,9 @@ figma.ui.onmessage = async (msg) => {
               const end = start + match[0].length;
               node.setRangeFontName(start, end, { family: numberFont, style: numberWeight });
               
-              if (!msg.keepCurrentSize && msg.numberSize !== 'current') {
-                node.setRangeFontSize(start, end, msg.numberSize);
+              if (!msg.keepCurrentSize) {
+                const numberSize = safeParseNumber(msg.numberSize, currentFontSize);
+                node.setRangeFontSize(start, end, numberSize);
               }
             }
             
