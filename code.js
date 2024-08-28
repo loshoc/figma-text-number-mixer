@@ -54,10 +54,10 @@ figma.ui.onmessage = (msg) => __awaiter(void 0, void 0, void 0, function* () {
                             const parsed = parseFloat(value);
                             return isNaN(parsed) ? fallback : parsed;
                         };
-                        if (!msg.keepCurrentSize) {
-                            const textSize = safeParseNumber(msg.textSize, currentFontSize);
-                            node.fontSize = textSize;
-                        }
+                        // Use current font size by default
+                        const keepCurrentSize = msg.keepCurrentSize !== false; // true unless explicitly set to false
+                        const textSize = keepCurrentSize ? currentFontSize : safeParseNumber(msg.textSize, currentFontSize);
+                        node.fontSize = textSize;
                         // Find and style number segments
                         const text = node.characters;
                         const numberRegex = /\d+/g;
@@ -66,10 +66,8 @@ figma.ui.onmessage = (msg) => __awaiter(void 0, void 0, void 0, function* () {
                             const start = match.index;
                             const end = start + match[0].length;
                             node.setRangeFontName(start, end, { family: numberFont, style: numberWeight });
-                            if (!msg.keepCurrentSize) {
-                                const numberSize = safeParseNumber(msg.numberSize, currentFontSize);
-                                node.setRangeFontSize(start, end, numberSize);
-                            }
+                            const numberSize = keepCurrentSize ? currentFontSize : safeParseNumber(msg.numberSize, currentFontSize);
+                            node.setRangeFontSize(start, end, numberSize);
                         }
                         console.log('Styles applied to node:', node.name);
                     }

@@ -217,7 +217,7 @@
   </div>
 
   <label class="custom-checkbox">
-    <input type="checkbox" id="keepCurrentSize">
+    <input type="checkbox" id="keepCurrentSize" checked>
     <span class="checkmark"></span>
     All keep current font sizes
   </label>
@@ -448,6 +448,16 @@
     document.addEventListener('click', closeAllDropdowns);
     window.addEventListener('blur', closeAllDropdowns);
     document.addEventListener('scroll', repositionDropdowns);
+
+    // At the beginning of your script or in the initialization function
+    document.getElementById('keepCurrentSize').checked = true;
+
+    // When sending the message to the plugin
+    figma.ui.postMessage({
+      type: 'apply-styles',
+      // ... other properties ...
+      keepCurrentSize: document.getElementById('keepCurrentSize').checked
+    });
   </script>
 </body>
 </html>
