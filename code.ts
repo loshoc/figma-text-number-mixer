@@ -7,7 +7,7 @@
 // full browser environment (See https://www.figma.com/plugin-docs/how-plugins-run).
 
 // This shows the HTML page in "ui.html".
-figma.showUI(__html__, { width: 280, height: 420 });
+figma.showUI(__html__, { width: 300, height: 530 });
 
 figma.ui.onmessage = async (msg) => {
   if (msg.type === 'get-fonts') {
@@ -28,46 +28,76 @@ figma.ui.onmessage = async (msg) => {
       for (const node of selection) {
         if (node.type === "TEXT") {
           try {
-            // Use 'Inter' as the default font
-            const textFont = msg.textFont || 'Inter';
-            const textWeight = msg.textWeight || 'Regular';
-            const numberFont = msg.numberFont || 'Inter';
-            const numberWeight = msg.numberWeight || 'Regular';
-
-            // Load fonts
-            await figma.loadFontAsync({ family: textFont, style: textWeight });
-            await figma.loadFontAsync({ family: numberFont, style: numberWeight });
-            
-            // Apply text styles to the entire layer
-            node.fontName = { family: textFont, style: textWeight };
-            
             const currentFontSize = node.fontSize as number;
 
-            // Function to safely parse number or return fallback
+            // Load all fonts used in the text node
+            const uniqueFonts = new Set<string>();
+            for (const run of node.getRangeAllFontNames(0, node.characters.length)) {
+              uniqueFonts.add(JSON.stringify(run));
+            }
+            await Promise.all(Array.from(uniqueFonts).map((fontStr: string) => 
+              figma.loadFontAsync(JSON.parse(fontStr) as FontName)
+            ));
+
+            // Load new fonts
+            await figma.loadFontAsync({ family: msg.englishFont, style: msg.englishWeight });
+            await figma.loadFontAsync({ family: msg.chineseFont, style: msg.chineseWeight });
+            await figma.loadFontAsync({ family: msg.numberFont, style: msg.numberWeight });
+
             const safeParseNumber = (value: any, fallback: number): number => {
-              if (value === 'current') return fallback;
+              if (value === undefined || value === 'current') return fallback;
               const parsed = parseFloat(value);
               return isNaN(parsed) ? fallback : parsed;
             };
 
-            // Use current font size by default
-            const keepCurrentSize = msg.keepCurrentSize !== false; // true unless explicitly set to false
-            const textSize = keepCurrentSize ? currentFontSize : safeParseNumber(msg.textSize, currentFontSize);
-            node.fontSize = textSize;
+            const keepCurrentSize = msg.keepCurrentSize !== false;
+            const englishSize = keepCurrentSize ? currentFontSize : safeParseNumber(msg.englishSize, currentFontSize);
+            const chineseSize = keepCurrentSize ? currentFontSize : safeParseNumber(msg.chineseSize, currentFontSize);
+            const numberSize = keepCurrentSize ? currentFontSize : safeParseNumber(msg.numberSize, currentFontSize);
 
-            // Find and style number segments
-            const text = node.characters;
-            const numberRegex = /\d+/g;
-            let match;
-            while ((match = numberRegex.exec(text)) !== null) {
-              const start = match.index;
-              const end = start + match[0].length;
-              node.setRangeFontName(start, end, { family: numberFont, style: numberWeight });
-              
-              const numberSize = keepCurrentSize ? currentFontSize : safeParseNumber(msg.numberSize, currentFontSize);
-              node.setRangeFontSize(start, end, numberSize);
-            }
+            let text = node.characters;
             
+            // Apply auto spacing first if enabled
+            if (msg.autoSpacing) {
+              text = applyAutoSpacing(text);
+            }
+
+            // Update the node's characters
+            node.characters = text;
+
+            // Function to apply style to a range
+            const applyStyle = (start: number, end: number, isEnglish: boolean, isChinese: boolean, isNumber: boolean) => {
+              if (isEnglish) {
+                node.setRangeFontName(start, end, { family: msg.englishFont, style: msg.englishWeight });
+                setRangeFontSize(node, start, end, englishSize);
+              } else if (isChinese) {
+                node.setRangeFontName(start, end, { family: msg.chineseFont, style: msg.chineseWeight });
+                setRangeFontSize(node, start, end, chineseSize);
+              } else if (isNumber) {
+                node.setRangeFontName(start, end, { family: msg.numberFont, style: msg.numberWeight });
+                setRangeFontSize(node, start, end, numberSize);
+              }
+            };
+
+            // Regex for different types
+            const englishRegex = /[a-zA-Z]+/g;
+            const chineseRegex = /[\u4e00-\u9fa5]+/g;
+            const numberRegex = /\d+/g;
+
+            // Apply styles for each type
+            [
+              { regex: chineseRegex, isEnglish: false, isChinese: true, isNumber: false },
+              { regex: englishRegex, isEnglish: true, isChinese: false, isNumber: false },
+              { regex: numberRegex, isEnglish: false, isChinese: false, isNumber: true }
+            ].forEach(({ regex, isEnglish, isChinese, isNumber }) => {
+              let match;
+              while ((match = regex.exec(text)) !== null) {
+                const start = match.index;
+                const end = start + match[0].length;
+                applyStyle(start, end, isEnglish, isChinese, isNumber);
+              }
+            });
+
             console.log('Styles applied to node:', node.name);
           } catch (error) {
             console.error('Error processing node:', error);
@@ -76,15 +106,33 @@ figma.ui.onmessage = async (msg) => {
         }
       }
       
-      // After applying styles, show a notification but don't close the plugin
       figma.notify('Styles applied successfully!');
     } catch (error) {
-      // If there's an error, show an error notification
       const errorMessage = error instanceof Error ? error.message : String(error);
       figma.notify('Error applying styles: ' + errorMessage, {error: true});
     }
   }
 };
+
+function setRangeFontSize(node: TextNode, start: number, end: number, fontSize: number) {
+  try {
+    if (node.parent && node.parent.type === 'INSTANCE') {
+      console.warn('Text node is inside a symbol instance. Cannot modify directly.');
+      return;
+    }
+    node.setRangeFontSize(start, end, fontSize);
+  } catch (error) {
+    console.error('Error in setRangeFontSize:', error);
+  }
+}
+
+// Add this function to handle auto spacing
+function applyAutoSpacing(text: string): string {
+  return text.replace(/([a-zA-Z0-9])([^\s\w])/g, '$1 $2')
+             .replace(/([^\s\w])([a-zA-Z])/g, '$1 $2')
+             .replace(/(\d)([^\s\d])/g, '$1 $2')
+             .replace(/([^\s\d])(\d)/g, '$1 $2');
+}
 
 figma.on('selectionchange', () => {
   figma.ui.postMessage({ type: 'selection-changed' });
