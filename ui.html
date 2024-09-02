@@ -9,13 +9,13 @@
       margin: 0;
       box-sizing: border-box;
       width: 100%;
-      height: 530px;
       overflow-y: auto;
     }
     h1 {
       font-size: 12px;
       font-weight: 600;
       margin-bottom: 10px;
+      margin-top: 0;
     }
     select, button, input { margin-bottom: 10px; padding: 5px; }
     input{
@@ -24,12 +24,7 @@
       border: none;
       background-color: #f5f5f5;
     }
-    .divider {
-      border: none;
-      height: 1px;
-      background-color: #e5e5e5;
-      margin: 16px 0;
-    }
+
     
     .font-dropdown {
       position: relative;
@@ -106,7 +101,6 @@
       display: flex;
       justify-content: space-between;
       align-items: flex-start;
-      margin-bottom: 10px;
     }
     .horizontal-group .font-dropdown {
       width: 65%;
@@ -115,14 +109,28 @@
     .horizontal-group input[type="number"] {
       width: 30%;
     }
-    #applyButton {
+    #applyButton, #addMoreLanguages {
       width: 100%;
       padding: 10px;
       border: none;
       border-radius: 5px;
-      background-color: #000000;
       color: #fff;
       cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+      
+    }
+
+    #applyButton {
+      background-color: #000000;
+    }
+
+    #addMoreLanguages {
+      background-color: #c9c9c9; /* Lighter background */
+    }
+
+    #addMoreLanguages:hover {
+      background-color: #888888; /* Slightly darker on hover */
     }
 
     /* Custom checkbox styles */
@@ -131,8 +139,8 @@
       align-items: center;
       cursor: pointer;
       user-select: none;
-      margin-top: 16px;
-      margin-bottom: 16px;
+      margin-top: 12px;
+      margin-bottom: 8px;
     }
 
     .custom-checkbox input {
@@ -142,7 +150,6 @@
       height: 0;
       width: 0;
     }
-
     .checkmark {
       height: 14px;
       width: 14px;
@@ -177,63 +184,101 @@
     .custom-checkbox input:checked ~ .checkmark:after {
       display: block;
     }
+
+    .settings-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .settings-header h1 {
+      margin: 0;
+      padding: 0;
+    }
+
+    .close-button {
+      background: none;
+      border: none;
+      font-size: 20px;
+      cursor: pointer;
+      color: #666;
+      padding-top:10px;
+    }
+
+    .close-button:hover {
+      color: #000;
+    }
+
+.description{
+  margin-top: 20px;
+}
+
   </style>
 </head>
 <body>
-  <h1>English Text Settings</h1>
-  <div class="font-dropdown">
-    <div class="font-select" id="englishFontSelect">Inter</div>
-    <div class="font-dropdown-content" id="englishFontOptions">
-      <input type="text" class="font-search" placeholder="Search fonts...">
-      <div class="font-options-list"></div>
-    </div>
-  </div>
-  <div class="horizontal-group">
+  <div class="settings-section">
+    <h1>English Text Settings</h1>
     <div class="font-dropdown">
-      <div class="font-select" id="englishWeightSelect">Regular</div>
-      <div class="font-dropdown-content" id="englishWeightOptions">
+      <div class="font-select" id="englishFontSelect">Inter</div>
+      <div class="font-dropdown-content" id="englishFontOptions">
+        <input type="text" class="font-search" placeholder="Search fonts...">
         <div class="font-options-list"></div>
       </div>
     </div>
-    <input type="number" id="englishSize" placeholder="Font size" value="16">
-  </div>
-
-  
-
-  <h1>Number Settings</h1>
-  <div class="font-dropdown">
-    <div class="font-select" id="numberFontSelect">Inter</div>
-    <div class="font-dropdown-content" id="numberFontOptions">
-      <input type="text" class="font-search" placeholder="Search fonts...">
-      <div class="font-options-list"></div>
+    <div class="horizontal-group">
+      <div class="font-dropdown">
+        <div class="font-select" id="englishWeightSelect">Regular</div>
+        <div class="font-dropdown-content" id="englishWeightOptions">
+          <div class="font-options-list"></div>
+        </div>
+      </div>
+      <input type="number" id="englishSize" placeholder="Font size" value="16">
     </div>
   </div>
-  <div class="horizontal-group">
+
+  <div class="settings-section">
+    <h1>Number Settings</h1>
     <div class="font-dropdown">
-      <div class="font-select" id="numberWeightSelect">Regular</div>
-      <div class="font-dropdown-content" id="numberWeightOptions">
+      <div class="font-select" id="numberFontSelect">Inter</div>
+      <div class="font-dropdown-content" id="numberFontOptions">
+        <input type="text" class="font-search" placeholder="Search fonts...">
         <div class="font-options-list"></div>
       </div>
     </div>
-    <input type="number" id="numberSize" placeholder="Font size" value="16">
+    <div class="horizontal-group">
+      <div class="font-dropdown">
+        <div class="font-select" id="numberWeightSelect">Regular</div>
+        <div class="font-dropdown-content" id="numberWeightOptions">
+          <div class="font-options-list"></div>
+        </div>
+      </div>
+      <input type="number" id="numberSize" placeholder="Font size" value="16">
+    </div>
   </div>
 
-  <h1>Chinese Text Settings</h1>
-  <div class="font-dropdown">
-    <div class="font-select" id="chineseFontSelect">SimSong</div>
-    <div class="font-dropdown-content" id="chineseFontOptions">
-      <input type="text" class="font-search" placeholder="Search fonts...">
-      <div class="font-options-list"></div>
-    </div>
-  </div>
-  <div class="horizontal-group">
-    <div class="font-dropdown">
-      <div class="font-select" id="chineseWeightSelect">Regular</div>
-      <div class="font-dropdown-content" id="chineseWeightOptions">
-        <div class="font-options-list"></div>
+  <div id="chineseSettingsContainer" style="display: none;">
+    <div id="chineseSettings">
+      <div class="settings-header">
+        <h1>Chinese Text Settings</h1>
+        <button id="removeChineseSettings" class="close-button" aria-label="Close Chinese settings">×</button>
+      </div>
+      <div class="font-dropdown">
+        <div class="font-select" id="chineseFontSelect">SimSong</div>
+        <div class="font-dropdown-content" id="chineseFontOptions">
+          <input type="text" class="font-search" placeholder="Search fonts...">
+          <div class="font-options-list"></div>
+        </div>
+      </div>
+      <div class="horizontal-group">
+        <div class="font-dropdown">
+          <div class="font-select" id="chineseWeightSelect">Regular</div>
+          <div class="font-dropdown-content" id="chineseWeightOptions">
+            <div class="font-options-list"></div>
+          </div>
+        </div>
+        <input type="number" id="chineseSize" placeholder="Font size" value="16">
       </div>
     </div>
-    <input type="number" id="chineseSize" placeholder="Font size" value="16">
   </div>
 
   <label class="custom-checkbox">
@@ -246,8 +291,11 @@
     <span class="checkmark"></span>
     Auto spacing
   </label>
-  <p style="color: #ccc;">Select the text layer and apply styles</p>
+  <div class="description">
+  <p style="color: #ccc;">Set at least two styles, then select the text layer and apply the styles.</p>
   <button id="applyButton">Apply Styles</button>
+  <button id="addMoreLanguages">Add More Languages</button>
+  </div>
 
   <script>
     let activeDropdown = null;
@@ -480,16 +528,23 @@
 
       const autoSpacing = document.getElementById('autoSpacing').checked;
 
-      parent.postMessage({ 
-        pluginMessage: { 
-          type: 'apply-styles',
-          englishFont, englishWeight, englishSize,
-          chineseFont, chineseWeight, chineseSize,
-          numberFont, numberWeight, numberSize,
-          keepCurrentSize,
-          autoSpacing
-        } 
-      }, '*');
+      const chineseSettingsVisible = document.getElementById('chineseSettingsContainer').style.display !== 'none';
+      
+      const message = {
+        type: 'apply-styles',
+        englishFont, englishWeight, englishSize,
+        numberFont, numberWeight, numberSize,
+        keepCurrentSize,
+        autoSpacing
+      };
+
+      if (chineseSettingsVisible) {
+        message.chineseFont = chineseFont;
+        message.chineseWeight = chineseWeight;
+        message.chineseSize = chineseSize;
+      }
+
+      parent.postMessage({ pluginMessage: message }, '*');
     };
 
     parent.postMessage({ pluginMessage: { type: 'get-fonts' } }, '*');
@@ -501,21 +556,25 @@
     // At the beginning of your script or in the initialization function
     document.getElementById('keepCurrentSize').checked = true;
 
-    // When sending the message to the plugin
-    figma.ui.postMessage({
-      type: 'apply-styles',
-      englishFont: document.getElementById('englishFontSelect').textContent,
-      englishWeight: document.getElementById('englishWeightSelect').textContent,
-      englishSize: document.getElementById('englishSize').value,
-      chineseFont: document.getElementById('chineseFontSelect').textContent,
-      chineseWeight: document.getElementById('chineseWeightSelect').textContent,
-      chineseSize: document.getElementById('chineseSize').value,
-      numberFont: document.getElementById('numberFontSelect').textContent,
-      numberWeight: document.getElementById('numberWeightSelect').textContent,
-      numberSize: document.getElementById('numberSize').value,
-      keepCurrentSize: document.getElementById('keepCurrentSize').checked,
-      autoSpacing: document.getElementById('autoSpacing').checked
+    function resizeWindow(showChinese) {
+      const height = showChinese ? 560 : 470;
+      parent.postMessage({ pluginMessage: { type: 'resize', height: height } }, '*');
+    }
+
+    document.getElementById('addMoreLanguages').addEventListener('click', () => {
+      document.getElementById('chineseSettingsContainer').style.display = 'block';
+      document.getElementById('addMoreLanguages').style.display = 'none';
+      resizeWindow(true);
     });
+
+    document.getElementById('removeChineseSettings').addEventListener('click', () => {
+      document.getElementById('chineseSettingsContainer').style.display = 'none';
+      document.getElementById('addMoreLanguages').style.display = 'block';
+      resizeWindow(false);
+    });
+
+    // Call this function on initial load to set the correct size
+    resizeWindow(false);
   </script>
 </body>
 </html>

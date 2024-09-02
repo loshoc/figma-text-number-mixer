@@ -10,6 +10,9 @@
 figma.showUI(__html__, { width: 300, height: 530 });
 
 figma.ui.onmessage = async (msg) => {
+  if (msg.type === 'resize') {
+    figma.ui.resize(300, msg.height); // Assuming the width is 300px, adjust if different
+  }
   if (msg.type === 'get-fonts') {
     const fonts = await figma.listAvailableFontsAsync();
     const fontFamilies = ['Inter', 'Times New Roman', ...new Set(fonts.map(font => font.fontName.family).filter(f => f !== 'Inter' && f !== 'Times New Roman'))];
@@ -41,8 +44,12 @@ figma.ui.onmessage = async (msg) => {
 
             // Load new fonts
             await figma.loadFontAsync({ family: msg.englishFont, style: msg.englishWeight });
-            await figma.loadFontAsync({ family: msg.chineseFont, style: msg.chineseWeight });
             await figma.loadFontAsync({ family: msg.numberFont, style: msg.numberWeight });
+            
+            // Load Chinese font only if it's included in the message
+            if (msg.chineseFont && msg.chineseWeight) {
+              await figma.loadFontAsync({ family: msg.chineseFont, style: msg.chineseWeight });
+            }
 
             const safeParseNumber = (value: any, fallback: number): number => {
               if (value === undefined || value === 'current') return fallback;
@@ -52,8 +59,8 @@ figma.ui.onmessage = async (msg) => {
 
             const keepCurrentSize = msg.keepCurrentSize !== false;
             const englishSize = keepCurrentSize ? currentFontSize : safeParseNumber(msg.englishSize, currentFontSize);
-            const chineseSize = keepCurrentSize ? currentFontSize : safeParseNumber(msg.chineseSize, currentFontSize);
             const numberSize = keepCurrentSize ? currentFontSize : safeParseNumber(msg.numberSize, currentFontSize);
+            const chineseSize = msg.chineseSize ? (keepCurrentSize ? currentFontSize : safeParseNumber(msg.chineseSize, currentFontSize)) : englishSize;
 
             let text = node.characters;
             
@@ -70,7 +77,7 @@ figma.ui.onmessage = async (msg) => {
               if (isEnglish) {
                 node.setRangeFontName(start, end, { family: msg.englishFont, style: msg.englishWeight });
                 setRangeFontSize(node, start, end, englishSize);
-              } else if (isChinese) {
+              } else if (isChinese && msg.chineseFont && msg.chineseWeight) {
                 node.setRangeFontName(start, end, { family: msg.chineseFont, style: msg.chineseWeight });
                 setRangeFontSize(node, start, end, chineseSize);
               } else if (isNumber) {
@@ -128,10 +135,19 @@ function setRangeFontSize(node: TextNode, start: number, end: number, fontSize: 
 
 // Add this function to handle auto spacing
 function applyAutoSpacing(text: string): string {
-  return text.replace(/([a-zA-Z0-9])([^\s\w])/g, '$1 $2')
-             .replace(/([^\s\w])([a-zA-Z])/g, '$1 $2')
-             .replace(/(\d)([^\s\d])/g, '$1 $2')
-             .replace(/([^\s\d])(\d)/g, '$1 $2');
+  return text.replace(/([a-zA-Z])([\u4e00-\u9fa5])/g, '$1 $2') // English and Chinese
+             .replace(/([\u4e00-\u9fa5])([a-zA-Z])/g, '$1 $2') // Chinese and English
+             .replace(/([a-zA-Z])(\d)/g, '$1 $2') // English and numbers
+             .replace(/(\d)([a-zA-Z])/g, '$1 $2') // Numbers and English
+             .replace(/([\u4e00-\u9fa5])(\d)/g, '$1 $2') // Chinese and numbers
+             .replace(/(\d)([\u4e00-\u9fa5])/g, '$1 $2') // Numbers and Chinese
+             .replace(/([^\u4e00-\u9fa5\w\s])([^\s])/g, '$1 $2') // Half-width punctuation and other characters
+             .replace(/(\d)(?=[a-zA-Z\u4e00-\u9fa5])/g, '$1 ') // Numbers and units
+             .replace(/([^\u4e00-\u9fa5\w\s])([^\s])/g, '$1$2') // No space between full-width punctuation and other characters
+             .replace(/(\d)\s(?=[a-zA-Z\u4e00-\u9fa5])/g, '$1') // Remove space between numbers and units
+             .replace(/([^\u4e00-\u9fa5\w\s])\s([^\s])/g, '$1$2') // Remove space between full-width punctuation and other characters
+             .replace(/\s([^\u4e00-\u9fa5\w\s])/g, '$1') // Remove space before half-width punctuation marks
+             .replace(/([^\u4e00-\u9fa5\w\s])([^\s])/g, '$1 $2'); // Add space only after half-width punctuation marks
 }
 
 figma.on('selectionchange', () => {
