@@ -147,7 +147,9 @@ function applyAutoSpacing(text: string): string {
              .replace(/(\d)\s(?=[a-zA-Z\u4e00-\u9fa5])/g, '$1') // Remove space between numbers and units
              .replace(/([^\u4e00-\u9fa5\w\s])\s([^\s])/g, '$1$2') // Remove space between full-width punctuation and other characters
              .replace(/\s([^\u4e00-\u9fa5\w\s])/g, '$1') // Remove space before half-width punctuation marks
-             .replace(/([^\u4e00-\u9fa5\w\s])([^\s])/g, '$1 $2'); // Add space only after half-width punctuation marks
+             .replace(/([^\u4e00-\u9fa5\w\s])([^\s])/g, '$1 $2') // Add space only after half-width punctuation marks
+             .replace(/([a-zA-Z\u4e00-\u9fa5])([^\u4e00-\u9fa5\w\s])/g, '$1$2') // Ensure punctuation matches the style of preceding text
+             .replace(/([^\u4e00-\u9fa5\w\s])([a-zA-Z\u4e00-\u9fa5])/g, '$1$2'); // Ensure punctuation matches the style of preceding text
 }
 
 figma.on('selectionchange', () => {
